@@ -29,10 +29,19 @@
 #include <GL/glut.h>
 #endif
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
+
+#define assert_gl_ok _assert_gl_ok(__FILE__, __LINE__);
+
+void _assert_gl_ok(char *file, int line)
+{
+    if (glGetError() != GL_NO_ERROR)
+    {
+        printf("OpenGL triggered an error somewhere before %s:%d\n", file, line);
+        exit(1);
+    }
+}
 
 // GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
 // GLubyte cubeIndices[2*12] = {
@@ -82,6 +91,39 @@ GLfloat cubeColors[] = {
     1,0,1  // 7 - front - magenta
 };
 
+GLuint vertices_buffer;
+GLuint indices_buffer;
+GLuint colors_buffer;
+
+void set_up()
+{
+    // create buffers
+    glGenBuffersARB(1, &vertices_buffer);
+    glGenBuffersARB(1, &indices_buffer);
+    glGenBuffersARB(1, &colors_buffer);
+
+    // upload vertices
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices_buffer);
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeVertices) / sizeof(GLfloat), cubeVertices, GL_STATIC_DRAW_ARB);
+
+    // upload indices
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices_buffer);
+    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(cubeIndices) / sizeof(GLubyte), cubeIndices, GL_STATIC_DRAW_ARB);
+
+    // upload colors
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, colors_buffer);
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeColors) / sizeof(GLfloat), cubeColors, GL_STATIC_DRAW_ARB);
+
+    assert_gl_ok
+}
+
+void tear_down()
+{
+    glDeleteBuffersARB(1, &vertices_buffer);
+    glDeleteBuffersARB(1, &indices_buffer);
+    glDeleteBuffersARB(1, &colors_buffer);
+}
+
 void display(void)
 {
     /* Clear all pixels */
@@ -93,18 +135,25 @@ void display(void)
     glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-    glColorPointer(3, GL_FLOAT, 0, cubeColors);
-	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
+    // let GL know about our colors
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, colors_buffer);
+    glColorPointer(3, GL_FLOAT, 0, 0);
+    
+    // point to the vertices
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices_buffer);
+	glVertexPointer(3, GL_FLOAT, 0, 0);
 
-	// draw a cube
-	glDrawElements(GL_QUADS, sizeof(cubeIndices) / sizeof(GLubyte), GL_UNSIGNED_BYTE, cubeIndices);
+    // draw a cube
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices_buffer);
+	glDrawElements(GL_QUADS, sizeof(cubeIndices) / sizeof(GLubyte), GL_UNSIGNED_BYTE, 0);
 
-	// deactivate vertex arrays after drawing
+    // deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
-
     glutSwapBuffers();
+
+    assert_gl_ok;
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -114,6 +163,7 @@ void keyboard(unsigned char key, int x, int y)
         case 'Q':
         case 27: // ESC key
             printf("Exiting...\n");
+            tear_down();
             exit(0);
             break;
     }
@@ -162,8 +212,9 @@ int main(int argc, char** argv)
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
 
-
+    set_up();
     glutMainLoop();
+    // tear_down(); // no use, glutMainLoop never ever returns.
 
     return 0;
 }
