@@ -82,14 +82,23 @@ GLfloat cubeColors[] = {
     1,0,1  // 7 - front - magenta
 };
 
+enum MouseMode {
+    ZOOMING,
+    ROTATING,
+    IDLE
+};
+
 float camera_pitch = 0;
 float camera_heading = 0;
+float camera_zoom = 0;
 
 int mouse_x = 0;
 int mouse_y = 0;
 
 int mouse_dx = 0;
 int mouse_dy = 0;
+
+enum MouseMode mouse_mode = IDLE;
 
 void display(void)
 {
@@ -101,8 +110,9 @@ void display(void)
 
     glPushMatrix();
 
+    glTranslatef(0, 0, camera_zoom);    // zoom
     glRotatef(camera_pitch, 1, 0, 0);   // pitch
-    glRotatef(camera_heading, 0, 1, 0);   // heading
+    glRotatef(camera_heading, 0, 1, 0); // heading
 
     glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -150,6 +160,14 @@ void mouse(int button, int state, int x, int y)
 
     mouse_dx = 0;
     mouse_dy = 0;
+
+    if (state == GLUT_UP)
+        mouse_mode = IDLE;
+    else
+        if (glutGetModifiers() & GLUT_ACTIVE_CTRL)
+            mouse_mode = ZOOMING;
+        else
+            mouse_mode = ROTATING;
 }
 
 void motion(int x, int y)
@@ -162,9 +180,18 @@ void idle()
 {
     float f =1.0 / 1000;
 
-    camera_heading += f * mouse_dx;
-    camera_pitch += f * mouse_dy;
-
+    switch (mouse_mode)
+    {
+        case ZOOMING:
+            camera_zoom += (1.0 / 10000) * mouse_dy;
+            break;
+        
+        case ROTATING:
+            camera_heading += f * mouse_dx;
+            camera_pitch += f * mouse_dy;
+            break;
+    }
+    
     glutPostRedisplay();
 }
 
