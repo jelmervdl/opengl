@@ -82,6 +82,15 @@ GLfloat cubeColors[] = {
     1,0,1  // 7 - front - magenta
 };
 
+float camera_pitch = 0;
+float camera_heading = 0;
+
+int mouse_x = 0;
+int mouse_y = 0;
+
+int mouse_dx = 0;
+int mouse_dy = 0;
+
 void display(void)
 {
     /* Clear all pixels */
@@ -89,6 +98,11 @@ void display(void)
     glColor3f(0.0f,0.0f,1.0f);
     glLoadIdentity();
     gluLookAt(0.0,0.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0);
+
+    glPushMatrix();
+
+    glRotatef(camera_pitch, 1, 0, 0);   // pitch
+    glRotatef(camera_heading, 0, 1, 0);   // heading
 
     glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -103,6 +117,7 @@ void display(void)
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
+    glPopMatrix();
 
     glutSwapBuffers();
 }
@@ -126,6 +141,31 @@ void reshape(int w, int h)
     glLoadIdentity();
     gluPerspective(60.0,(GLdouble)w/(GLdouble)h,1.5,20.0);
     glMatrixMode(GL_MODELVIEW);
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    mouse_x = x;
+    mouse_y = y;
+
+    mouse_dx = 0;
+    mouse_dy = 0;
+}
+
+void motion(int x, int y)
+{
+    mouse_dx = x - mouse_x;
+    mouse_dy = y - mouse_y;
+}
+
+void idle()
+{
+    float f =1.0 / 1000;
+
+    camera_heading += f * mouse_dx;
+    camera_pitch += f * mouse_dy;
+
+    glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
@@ -162,6 +202,10 @@ int main(int argc, char** argv)
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
 
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+
+    glutIdleFunc(idle);
 
     glutMainLoop();
 
