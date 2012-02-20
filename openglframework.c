@@ -223,6 +223,10 @@ void idle()
             camera_heading += 1.0 / 1000 * mouse_dx;
             camera_pitch   += 1.0 / 1000 * mouse_dy;
             break;
+        
+        default:
+        case IDLE:
+            break;
     }
     
     glutPostRedisplay();
