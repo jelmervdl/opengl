@@ -114,12 +114,16 @@ void display(void)
 
     glPushMatrix();
 
-    glTranslatef(camera_x, camera_y, 0);// panning
+    // zoom & panning
+    glTranslatef(camera_x, camera_y, camera_zoom);
 
-    glTranslatef(0, 0, camera_zoom);    // zoom
-    glRotatef(camera_pitch, 1, 0, 0);   // pitch
-    glRotatef(camera_heading, 0, 1, 0); // heading
+    // pitch
+    glRotatef(camera_pitch, 1, 0, 0);
 
+    // heading
+    glRotatef(camera_heading, 0, 1, 0);
+
+    // .. and drawing!
     glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
@@ -138,9 +142,27 @@ void display(void)
     glutSwapBuffers();
 }
 
+// Pressing R resets the camera
+void reset_camera()
+{
+    camera_x = 0;
+    camera_y = 0;
+
+    camera_pitch = 0;
+    camera_heading = 0;
+    camera_zoom = 0;
+
+    glutPostRedisplay();
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
+        case 'r':
+        case 'R':
+            reset_camera();
+            break;
+         
         case 'q':
         case 'Q':
         case 27: // ESC key
