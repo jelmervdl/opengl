@@ -14,7 +14,6 @@
 // So if you do not wish to use  glut.h, uncomment the following lines.
 //#include <GL/gl.h>
 //#include <GL/glu.h>
-
 #if defined(NEED_GLEW)
 #include "glew.h"
 #endif
@@ -55,21 +54,14 @@ void assert_gl_buffer_size(int size)
     }
 }
 
-// GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
-// GLubyte cubeIndices[2*12] = {
-//         0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-//         1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-//         4,7, 5,7, 6,7                 /* From one minus to zero minusses */
-//     };
-
 /*
-  3 ----- 2
- /|      /|
-7 ----- 6 |
-| |     | |
-| 0 ----| 1
-|/      |/
-4 ----- 5
+  3 ------ 2
+ /|       /|
+7 ------ 6 |
+| |      | |
+| 0 -----| 1
+|/       |/
+4 ------ 5
 */
 
 GLfloat cubeVertices[] = {
@@ -122,21 +114,15 @@ void set_up()
 
     // upload vertices
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices_buffer);
-    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeVertices) / sizeof(GLfloat), cubeVertices, GL_STATIC_DRAW_ARB);
-
-    assert_gl_buffer_size(sizeof(cubeVertices) / sizeof(GLfloat));
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW_ARB);
 
     // upload indices
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices_buffer);
-    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(cubeIndices) / sizeof(GLubyte), cubeIndices, GL_STATIC_DRAW_ARB);
-
-    assert_gl_buffer_size(sizeof(cubeIndices) / sizeof(GLubyte));
+    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW_ARB);
 
     // upload colors
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, colors_buffer);
-    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeColors) / sizeof(GLfloat), cubeColors, GL_STATIC_DRAW_ARB);
-
-    assert_gl_buffer_size(sizeof(cubeColors) / sizeof(GLfloat));
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeColors), cubeColors, GL_STATIC_DRAW_ARB);
 
     assert_gl_ok
 
@@ -231,16 +217,16 @@ int main(int argc, char** argv)
 #endif
 
     /* Select clearing (background) color */
-    glClearColor(1.0,1.0,1.0,0.0);
+    glClearColor(0.8, 0.8, 0.8, 0.0);
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
-
-    set_up();
 
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
+
+    set_up();
 
     glutMainLoop();
     // tear_down(); // no use, glutMainLoop never ever returns.
