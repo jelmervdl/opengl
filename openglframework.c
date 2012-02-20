@@ -42,17 +42,12 @@ void _assert_gl_ok(char *file, int line)
     }
 }
 
-void assert_gl_buffer_size(int size)
-{
-    int buffer_size;
-    glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &buffer_size);
-
-    if (size != buffer_size)
-    {
-        printf("Data in VBO: %d bytes, expected %d bytes\n", buffer_size, size);
-        exit(1);
-    }
-}
+enum MouseMode {
+    ZOOMING,
+    PANNING,
+    ROTATING,
+    IDLE
+};
 
 /*
   3 ------ 2
@@ -99,6 +94,21 @@ GLuint vertices_buffer;
 GLuint indices_buffer;
 GLuint colors_buffer;
 
+float camera_x = 0;
+float camera_y = 0;
+
+float camera_pitch = 0;
+float camera_heading = 0;
+float camera_zoom = 0;
+
+int mouse_x = 0;
+int mouse_y = 0;
+
+int mouse_dx = 0;
+int mouse_dy = 0;
+
+enum MouseMode mouse_mode = IDLE;
+
 void gl_unbind_buffers()
 {
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
@@ -125,8 +135,6 @@ void set_up()
     glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeColors), cubeColors, GL_STATIC_DRAW_ARB);
 
     assert_gl_ok
-
-    gl_unbind_buffers();
 }
 
 void tear_down()
@@ -144,6 +152,18 @@ void display(void)
     glLoadIdentity();
     gluLookAt(0.0,0.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0);
 
+    glPushMatrix();
+
+    // zoom & panning
+    glTranslatef(camera_x, camera_y, camera_zoom);
+
+    // pitch
+    glRotatef(camera_pitch, 1, 0, 0);
+
+    // heading
+    glRotatef(camera_heading, 0, 1, 0);
+
+    // .. and drawing!
     glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
@@ -159,20 +179,38 @@ void display(void)
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices_buffer);
 	glDrawElements(GL_QUADS, sizeof(cubeIndices) / sizeof(GLubyte), GL_UNSIGNED_BYTE, 0);
 
-    gl_unbind_buffers();
-    
     // deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
+
+    glPopMatrix();
 
     glutSwapBuffers();
 
     assert_gl_ok;
 }
 
+// Pressing R resets the camera
+void reset_camera()
+{
+    camera_x = 0;
+    camera_y = 0;
+
+    camera_pitch = 0;
+    camera_heading = 0;
+    camera_zoom = 0;
+
+    glutPostRedisplay();
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
+        case 'r':
+        case 'R':
+            reset_camera();
+            break;
+         
         case 'q':
         case 'Q':
         case 27: // ESC key
@@ -190,6 +228,57 @@ void reshape(int w, int h)
     glLoadIdentity();
     gluPerspective(60.0,(GLdouble)w/(GLdouble)h,1.5,20.0);
     glMatrixMode(GL_MODELVIEW);
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    mouse_x = x;
+    mouse_y = y;
+
+    mouse_dx = 0;
+    mouse_dy = 0;
+
+    if (state == GLUT_UP)
+        mouse_mode = IDLE;
+    else
+        if (glutGetModifiers() & GLUT_ACTIVE_CTRL)
+            mouse_mode = ZOOMING;
+        else if (glutGetModifiers() & GLUT_ACTIVE_SHIFT)
+            mouse_mode = PANNING;
+        else
+            mouse_mode = ROTATING;
+}
+
+void motion(int x, int y)
+{
+    mouse_dx = x - mouse_x;
+    mouse_dy = y - mouse_y;
+}
+
+void idle()
+{
+    switch (mouse_mode)
+    {
+        case ZOOMING:
+            camera_zoom += 1.0 / 10000 * mouse_dy;
+            break;
+
+        case PANNING:
+            camera_x += 1.0 / 10000 * mouse_dx;
+            camera_y -= 1.0 / 10000 * mouse_dy;
+            break;
+        
+        case ROTATING:
+            camera_heading += 1.0 / 1000 * mouse_dx;
+            camera_pitch   += 1.0 / 1000 * mouse_dy;
+            break;
+        
+        default:
+        case IDLE:
+            break;
+    }
+    
+    glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
@@ -225,6 +314,9 @@ int main(int argc, char** argv)
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+    glutIdleFunc(idle);
 
     set_up();
 
