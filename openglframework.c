@@ -43,6 +43,18 @@ void _assert_gl_ok(char *file, int line)
     }
 }
 
+void assert_gl_buffer_size(int size)
+{
+    int buffer_size;
+    glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &buffer_size);
+
+    if (size != buffer_size)
+    {
+        printf("Data in VBO: %d bytes, expected %d bytes\n", buffer_size, size);
+        exit(1);
+    }
+}
+
 // GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
 // GLubyte cubeIndices[2*12] = {
 //         0,1, 0,2, 0,3,                /* From three minusses to two minusses */
@@ -95,6 +107,12 @@ GLuint vertices_buffer;
 GLuint indices_buffer;
 GLuint colors_buffer;
 
+void gl_unbind_buffers()
+{
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+}
+
 void set_up()
 {
     // create buffers
@@ -106,15 +124,23 @@ void set_up()
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices_buffer);
     glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeVertices) / sizeof(GLfloat), cubeVertices, GL_STATIC_DRAW_ARB);
 
+    assert_gl_buffer_size(sizeof(cubeVertices) / sizeof(GLfloat));
+
     // upload indices
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices_buffer);
     glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(cubeIndices) / sizeof(GLubyte), cubeIndices, GL_STATIC_DRAW_ARB);
+
+    assert_gl_buffer_size(sizeof(cubeIndices) / sizeof(GLubyte));
 
     // upload colors
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, colors_buffer);
     glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(cubeColors) / sizeof(GLfloat), cubeColors, GL_STATIC_DRAW_ARB);
 
+    assert_gl_buffer_size(sizeof(cubeColors) / sizeof(GLfloat));
+
     assert_gl_ok
+
+    gl_unbind_buffers();
 }
 
 void tear_down()
@@ -147,6 +173,8 @@ void display(void)
     glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices_buffer);
 	glDrawElements(GL_QUADS, sizeof(cubeIndices) / sizeof(GLubyte), GL_UNSIGNED_BYTE, 0);
 
+    gl_unbind_buffers();
+    
     // deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
@@ -203,16 +231,17 @@ int main(int argc, char** argv)
 #endif
 
     /* Select clearing (background) color */
-    glClearColor(0.0,0.0,0.0,0.0);
+    glClearColor(1.0,1.0,1.0,0.0);
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
+
+    set_up();
 
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
 
-    set_up();
     glutMainLoop();
     // tear_down(); // no use, glutMainLoop never ever returns.
 
