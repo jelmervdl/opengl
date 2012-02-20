@@ -84,9 +84,13 @@ GLfloat cubeColors[] = {
 
 enum MouseMode {
     ZOOMING,
+    PANNING,
     ROTATING,
     IDLE
 };
+
+float camera_x = 0;
+float camera_y = 0;
 
 float camera_pitch = 0;
 float camera_heading = 0;
@@ -109,6 +113,8 @@ void display(void)
     gluLookAt(0.0,0.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0);
 
     glPushMatrix();
+
+    glTranslatef(camera_x, camera_y, 0);// panning
 
     glTranslatef(0, 0, camera_zoom);    // zoom
     glRotatef(camera_pitch, 1, 0, 0);   // pitch
@@ -166,6 +172,8 @@ void mouse(int button, int state, int x, int y)
     else
         if (glutGetModifiers() & GLUT_ACTIVE_CTRL)
             mouse_mode = ZOOMING;
+        else if (glutGetModifiers() & GLUT_ACTIVE_SHIFT)
+            mouse_mode = PANNING;
         else
             mouse_mode = ROTATING;
 }
@@ -178,17 +186,20 @@ void motion(int x, int y)
 
 void idle()
 {
-    float f =1.0 / 1000;
-
     switch (mouse_mode)
     {
         case ZOOMING:
-            camera_zoom += (1.0 / 10000) * mouse_dy;
+            camera_zoom += 1.0 / 10000 * mouse_dy;
+            break;
+
+        case PANNING:
+            camera_x += 1.0 / 10000 * mouse_dx;
+            camera_y -= 1.0 / 10000 * mouse_dy;
             break;
         
         case ROTATING:
-            camera_heading += f * mouse_dx;
-            camera_pitch += f * mouse_dy;
+            camera_heading += 1.0 / 1000 * mouse_dx;
+            camera_pitch   += 1.0 / 1000 * mouse_dy;
             break;
     }
     
