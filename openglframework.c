@@ -3,6 +3,8 @@
 * at the University of Groningen.
 */
 
+#define _USE_MATH_DEFINES
+
 // If windows is used, windows.h should be included (before gl.h and glu.h)
 #if defined(_WIN32)
 #include <windows.h>
@@ -28,6 +30,8 @@
 #include <GL/glut.h>
 #endif
 
+#include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -42,12 +46,18 @@ void _assert_gl_ok(char *file, int line)
     }
 }
 
-enum MouseMode {
+typedef enum {
     ZOOMING,
     PANNING,
     ROTATING,
     IDLE
-};
+} MouseMode;
+
+typedef struct {
+    float x;
+    float y;
+    float z;  
+} Point;
 
 /*
   3 ------ 2
@@ -94,12 +104,10 @@ GLuint vertices_buffer;
 GLuint indices_buffer;
 GLuint colors_buffer;
 
-float camera_x = 0;
-float camera_y = 0;
+Point camera = {0, 0, 5};
 
 float camera_pitch = 0;
 float camera_heading = 0;
-float camera_zoom = 0;
 
 int mouse_x = 0;
 int mouse_y = 0;
@@ -107,7 +115,29 @@ int mouse_y = 0;
 int mouse_dx = 0;
 int mouse_dy = 0;
 
-enum MouseMode mouse_mode = IDLE;
+MouseMode mouse_mode = IDLE;
+
+Point reference_point(Point eye)
+{
+    Point center;
+    float cc = cos(camera_pitch * M_PI / 180);
+
+    center.x = eye.x + cos(camera_heading * M_PI / 180) * cc;
+    center.y = eye.y + -sin(camera_heading * M_PI / 180) * cc;
+    center.z = eye.z + sin(camera_pitch * M_PI / 180);
+
+    return center;
+}
+
+void print_point(Point p)
+{
+    printf("Point [x:%f y:%f z:%f, pitch:%f heading:%f]\n", p.x, p.y, p.z, camera_pitch, camera_heading);
+}
+
+float rad(float deg)
+{
+    return deg / 180.0 * M_PI;
+}
 
 void gl_unbind_buffers()
 {
@@ -150,18 +180,22 @@ void display(void)
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glColor3f(0.0f,0.0f,1.0f);
     glLoadIdentity();
-    gluLookAt(0.0,0.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0);
+
+    gluLookAt(
+        0.0,0.0,0.0,
+        0.0,0.0,-1.0,
+        0.0,1.0,0.0);
 
     glPushMatrix();
-
-    // zoom & panning
-    glTranslatef(camera_x, camera_y, camera_zoom);
 
     // pitch
     glRotatef(camera_pitch, 1, 0, 0);
 
     // heading
     glRotatef(camera_heading, 0, 1, 0);
+
+    // move camera to the center of the scene
+    glTranslatef(-camera.x, -camera.y, -camera.z);
 
     // .. and drawing!
     glEnableClientState(GL_COLOR_ARRAY);
@@ -193,12 +227,12 @@ void display(void)
 // Pressing R resets the camera
 void reset_camera()
 {
-    camera_x = 0;
-    camera_y = 0;
+    camera.x = 0;
+    camera.y = 0;
+    camera.z = 5;
 
     camera_pitch = 0;
     camera_heading = 0;
-    camera_zoom = 0;
 
     glutPostRedisplay();
 }
@@ -210,7 +244,27 @@ void keyboard(unsigned char key, int x, int y)
         case 'R':
             reset_camera();
             break;
-         
+        
+        case 'w':
+            camera.x += asin(rad(camera_heading));
+            camera.y += asin(rad(camera_pitch));
+            camera.z -= acos(rad(camera_heading));
+            break;
+        
+        case 's':
+            camera.x -= asin(rad(camera_heading));
+            camera.y -= asin(rad(camera_pitch));
+            camera.z += acos(rad(camera_heading));
+            break;  
+        
+        case 'a':
+            camera.x -= 1.0;
+            break;
+        
+        case 'd':
+            camera.x += 1.0;
+            break;
+
         case 'q':
         case 'Q':
         case 27: // ESC key
@@ -219,6 +273,8 @@ void keyboard(unsigned char key, int x, int y)
             exit(0);
             break;
     }
+
+    print_point(camera);
 }
 
 void reshape(int w, int h)
@@ -255,22 +311,32 @@ void motion(int x, int y)
     mouse_dy = y - mouse_y;
 }
 
+float limit(float n, float low, float high)
+{
+    if (n < low)
+        return low;
+    else if (n > high)
+        return high;
+    else
+        return n;
+}
+
 void idle()
 {
     switch (mouse_mode)
     {
         case ZOOMING:
-            camera_zoom += 1.0 / 10000 * mouse_dy;
+            camera.z += 1.0 / 10000 * mouse_dy;
             break;
 
         case PANNING:
-            camera_x += 1.0 / 10000 * mouse_dx;
-            camera_y -= 1.0 / 10000 * mouse_dy;
+            camera.x += 1.0 / 10000 * mouse_dx;
+            camera.y -= 1.0 / 10000 * mouse_dy;
             break;
         
         case ROTATING:
-            camera_heading += 1.0 / 1000 * mouse_dx;
-            camera_pitch   += 1.0 / 1000 * mouse_dy;
+            camera_heading += fmod(1.0 / 1000 * mouse_dx, 360);
+            camera_pitch   += limit(1.0 / 1000 * mouse_dy, -90, 90);
             break;
         
         default:
@@ -286,7 +352,6 @@ int main(int argc, char** argv)
 #if defined(NEED_GLEW)
     GLenum err;
 #endif
-
 
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
