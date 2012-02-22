@@ -1,3 +1,8 @@
+/**
+ * OpenGL Code for Computer Graphics course 2012
+ * Sander Feringa (1606913) and Jelmer van der Linde (1772791)
+ */
+
 /*
 * An OpenGL template/framework file for the Computer Graphics course
 * at the University of Groningen.
