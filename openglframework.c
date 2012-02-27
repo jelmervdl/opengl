@@ -29,7 +29,7 @@
 #include <GL/glut.h>
 #endif
 
-
+#include "glslshaders.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -273,7 +273,7 @@ void idle()
     glutPostRedisplay();
 }
 
-void init_light()
+void initLights()
 {
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
@@ -316,7 +316,9 @@ int main(int argc, char** argv)
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
 
-    init_light();
+    initLights();
+
+    initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
 
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
