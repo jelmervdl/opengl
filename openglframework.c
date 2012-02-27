@@ -312,7 +312,7 @@ int main(int argc, char** argv)
 #endif
 
     /* Select clearing (background) color */
-    glClearColor(0.0,0.0,0.0,0.0);
+    glClearColor(1.0,1.0,1.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
 

@@ -3,9 +3,9 @@
 varying vec3 N;
 varying vec3 v; 
 
-float limit(float value, float step_size)
+float step(float value, float step_size)
 {
-	return value - mod(value, step_size);
+	return max(step_size, value - mod(value, step_size));
 }
 
 void main()
@@ -30,6 +30,14 @@ void main()
 
     // write Total Color:
     vec4 color = gl_FrontLightModelProduct.sceneColor + Iamb + Idiff + Ispec;
+
+    if (dot(N, E) < 0.4)
+        color = vec4(0, 0, 0, 1.0);
+    else
+        color = vec4(
+            step(color.r, 0.2),
+            step(color.g, 0.2),
+            step(color.b, 0.2), 1.0);
 
     gl_FragColor = color;
 }
