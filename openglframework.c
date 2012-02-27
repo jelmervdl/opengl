@@ -33,6 +33,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
+#define SPHERE_N (20)
 
 // GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
 // GLubyte cubeIndices[2*12] = {
@@ -104,15 +107,28 @@ int mouse_dy = 0;
 
 enum MouseMode mouse_mode = IDLE;
 
+void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
+{
+    GLfloat ambient[] = {ka*r,ka*g,ka*b,1.0};
+    GLfloat diffuse[] = {kd*r,kd*g,kd*b,1.0};
+    GLfloat specular[] = {ks,ks,ks,1.0};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
+}
+
 void display(void)
 {
     /* Clear all pixels */
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glColor3f(0.0f,0.0f,1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(0.0,0.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0);
+    gluLookAt(200.0,200.0,1000.0,200.0,200.0,0.0,0.0,1.0,0.0);
 
     glPushMatrix();
+
+    // better rotation by rotating around the point 200,200,200
+    glTranslated(200,200,200);
 
     // zoom & panning
     glTranslatef(camera_x, camera_y, camera_zoom);
@@ -123,18 +139,43 @@ void display(void)
     // heading
     glRotatef(camera_heading, 0, 1, 0);
 
-    // .. and drawing!
+    // ... and back to 0,0,0 origin
+    glTranslated(-200, -200, -200);
+
     glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
 
-    glColorPointer(3, GL_FLOAT, 0, cubeColors);
-	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
+    setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
+    glPushMatrix();
+    glTranslated(90,320,100);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
 
-	// draw a cube
-	glDrawElements(GL_QUADS, sizeof(cubeIndices) / sizeof(GLubyte), GL_UNSIGNED_BYTE, cubeIndices);
+    setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
+    glPushMatrix();
+    glTranslated(210,270,300);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
 
-	// deactivate vertex arrays after drawing
-	glDisableClientState(GL_VERTEX_ARRAY);
+    setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
+    glPushMatrix();
+    glTranslated(290,170,150);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
+    glPushMatrix();
+    glTranslated(140,220,400);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
+    glPushMatrix();
+    glTranslated(110,130,200);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
     glPopMatrix();
@@ -177,7 +218,7 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60.0,(GLdouble)w/(GLdouble)h,1.5,20.0);
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -232,6 +273,20 @@ void idle()
     glutPostRedisplay();
 }
 
+void init_light()
+{
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_shininess[] = { 50.0 };
+    GLfloat light_position[] = { -200.0, 600.0, 1500.0 };
+    
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+ 
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+}
+
 int main(int argc, char** argv)
 {
 #if defined(NEED_GLEW)
@@ -258,8 +313,10 @@ int main(int argc, char** argv)
 
     /* Select clearing (background) color */
     glClearColor(0.0,0.0,0.0,0.0);
-    glShadeModel(GL_FLAT);
+    glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
+
+    init_light();
 
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
