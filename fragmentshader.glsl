@@ -5,7 +5,7 @@ varying vec3 v;
 
 float step(float value, float step_size)
 {
-	return max(step_size, value - mod(value, step_size));
+    return value + (step_size - mod(value, step_size));
 }
 
 void main()
