@@ -318,7 +318,10 @@ int main(int argc, char** argv)
 
     initLights();
 
-    initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
+    if (argc > 1 && strcmp(argv[1], "bonus\0") == 0)
+        initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
+    else
+        initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
 
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
