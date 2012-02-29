@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #define SPHERE_N (20)
 
@@ -312,13 +313,19 @@ int main(int argc, char** argv)
 #endif
 
     /* Select clearing (background) color */
-    glClearColor(1.0,1.0,1.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
 
     initLights();
 
-    initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
+    if (argc > 1 && strcmp(argv[1], "bonus\0") == 0) {
+        glClearColor(0.8,0.8,0.8,0.0);
+        initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
+    }
+    else {
+        glClearColor(0.0,0.0,0.0,0.0);
+        initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
+    }
 
     /* Register GLUT callback functions */
     glutDisplayFunc(display);

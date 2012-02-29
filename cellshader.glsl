@@ -1,7 +1,12 @@
 #version 120
 
 varying vec3 N;
-varying vec3 v;
+varying vec3 v; 
+
+float step(float value, float step_size)
+{
+	return value + (step_size - mod(value, step_size));
+}
 
 void main()
 {
@@ -36,5 +41,11 @@ void main()
     if (light_angle > 0.0)
         color += gl_FrontLightProduct[0].specular * pow(light_angle, gl_FrontMaterial.shininess);
     
-    gl_FragColor = color;
+    if (dot(N, E) < 0.4)
+        color = vec4(0, 0, 0, 1.0);
+
+    gl_FragColor = vec4(
+        step(color.r, 0.2),
+        step(color.g, 0.2),
+        step(color.b, 0.2), 1.0);
 }
