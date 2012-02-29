@@ -10,26 +10,36 @@ float limit(float value, float step_size)
 
 void main()
 {
-	// Source: http://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/lighting.php
+	// Source for variable names:
+    // http://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/lighting.php
 
+    // light in object space
 	vec3 L = normalize(gl_LightSource[0].position.xyz - v);
-    vec3 E = normalize(-v); // we are in Eye Coordinates, so EyePos is (0,0,0)
+
+    // we are in Eye Coordinates, so EyePos is (0,0,0)
+    vec3 E = normalize(-v);
+
+    // Reflected ray
     vec3 R = normalize(-reflect(L,N));
   
-    //calculate Ambient Term:
-    vec4 Iamb = gl_FrontLightProduct[0].ambient;
+    vec4 color = gl_FrontLightModelProduct.sceneColor;
+
+    // Ambient:
+    color += gl_FrontLightProduct[0].ambient;
  
-    //calculate Diffuse Term:
-    vec4 Idiff = gl_FrontLightProduct[0].diffuse * max(dot(N,L), 0.0);
-    Idiff = clamp(Idiff, 0.0, 1.0);
+    // Angle between object's normal and light
+    float angle = dot(N,L);
+
+    // Diffuse
+    if (angle > 0.0)
+        color += gl_FrontLightProduct[0].diffuse * angle;
     
-    // calculate Specular Term:
-    vec4 Ispec = gl_FrontLightProduct[0].specular
-                 * pow(max(dot(R,E), 0.0), 0.3 * gl_FrontMaterial.shininess);
-    Ispec = clamp(Ispec, 0.0, 1.0);
+    // Angle between reflection and eye
+    float light_angle = dot(R,E);
 
-    // write Total Color:
-    vec4 color = gl_FrontLightModelProduct.sceneColor + Iamb + Idiff + Ispec;
-
+    // Specular
+    if (light_angle > 0.0)
+        color += gl_FrontLightProduct[0].specular * pow(light_angle, gl_FrontMaterial.shininess);
+    
     gl_FragColor = color;
 }
