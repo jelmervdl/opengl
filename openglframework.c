@@ -38,9 +38,9 @@
 
 #define SPHERE_N (20)
 
-#define APERTURE_SAMPLES (16)
+#define APERTURE_SAMPLES (8)
 
-#define FERMAT_C (1.0)
+#define FERMAT_C 10.0 / sqrt(APERTURE_SAMPLES)
 #define GOLDEN_ANGLE (137.508)
 
 enum MouseMode {
@@ -149,7 +149,7 @@ void display(void)
         t = i * GOLDEN_ANGLE;
         x = r * cos(t);
         y = r * sin(t);
-        
+
         draw(x, y);
 
         glAccum(GL_ACCUM, 1.0 / APERTURE_SAMPLES);
