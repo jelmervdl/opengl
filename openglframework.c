@@ -38,55 +38,7 @@
 
 #define SPHERE_N (20)
 
-#define APERTURE_SAMPLES (8)
-
-// GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
-// GLubyte cubeIndices[2*12] = {
-//         0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-//         1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-//         4,7, 5,7, 6,7                 /* From one minus to zero minusses */
-//     };
-
-/*
-  3 ----- 2
- /|      /|
-7 ----- 6 |
-| |     | |
-| 0 ----| 1
-|/      |/
-4 ----- 5
-*/
-
-GLfloat cubeVertices[] = {
-    -1,-1,-1, // 0
-     1,-1,-1, // 1
-     1, 1,-1, // 2
-    -1, 1,-1, // 3
-    -1,-1, 1, // 4
-     1,-1, 1, // 5
-     1, 1, 1, // 6
-    -1, 1, 1, // 7
-};
-
-GLubyte cubeIndices[] = {
-    0,1,2,3, // back
-    0,1,5,4, // bottom
-    4,7,3,0, // left
-    1,2,6,5, // right
-    2,3,7,6, // top
-    4,5,6,7  // front
-};
-
-GLfloat cubeColors[] = {
-    1,0,0, // 0 - left - red
-    1,1,1, // 1
-    1,1,1, // 2
-    1,1,0, // 3 - back - yellow
-    0,1,0, // 4 - bottom - lime
-    0,0,1, // 5 - right - blue
-    0,1,1, // 6 - top - cyan
-    1,0,1  // 7 - front - magenta
-};
+#define APERTURE_SAMPLES (16)
 
 enum MouseMode {
     ZOOMING,
