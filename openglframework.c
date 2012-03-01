@@ -40,6 +40,9 @@
 
 #define APERTURE_SAMPLES (16)
 
+#define FERMAT_C (1.0)
+#define GOLDEN_ANGLE (137.508)
+
 enum MouseMode {
     ZOOMING,
     PANNING,
@@ -73,13 +76,16 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
 }
 
-void draw()
+void draw(float x, float y)
 {
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
-    gluLookAt(200.0,200.0,1000.0,200.0,200.0,0.0,0.0,1.0,0.0);
+    gluLookAt(
+        200.0 + x, 200.0 + y, 1000.0,
+        200.0, 200.0, 0.0,
+        0.0, 1.0, 0.0);
 
     // better rotation by rotating around the point 200,200,200
     glTranslated(200,200,200);
@@ -130,6 +136,7 @@ void draw()
 void display(void)
 {
     int i;
+    float r, t, x, y;
 
     glClear(GL_ACCUM_BUFFER_BIT);
 
@@ -138,7 +145,12 @@ void display(void)
 
     for (i = 0; i < APERTURE_SAMPLES; ++i)
     {
-        draw();
+        r = FERMAT_C * sqrt(i);
+        t = i * GOLDEN_ANGLE;
+        x = r * cos(t);
+        y = r * sin(t);
+        
+        draw(x, y);
 
         glAccum(GL_ACCUM, 1.0 / APERTURE_SAMPLES);
 
