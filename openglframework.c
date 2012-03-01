@@ -140,9 +140,6 @@ void display(void)
 
     glClear(GL_ACCUM_BUFFER_BIT);
 
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
-
     for (i = 0; i < APERTURE_SAMPLES; ++i)
     {
         r = FERMAT_C * sqrt(i);
@@ -156,9 +153,6 @@ void display(void)
 
         glFlush();
     }
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
 
     glAccum(GL_RETURN, 1.0);
 
