@@ -38,6 +38,8 @@
 
 #define SPHERE_N (20)
 
+#define APERTURE_SAMPLES (8)
+
 // GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
 // GLubyte cubeIndices[2*12] = {
 //         0,1, 0,2, 0,3,                /* From three minusses to two minusses */
@@ -119,14 +121,13 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
 }
 
-void display(void)
+void draw()
 {
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glLoadIdentity();
     gluLookAt(200.0,200.0,1000.0,200.0,200.0,0.0,0.0,1.0,0.0);
-
-    glPushMatrix();
 
     // better rotation by rotating around the point 200,200,200
     glTranslated(200,200,200);
@@ -142,9 +143,6 @@ void display(void)
 
     // ... and back to 0,0,0 origin
     glTranslated(-200, -200, -200);
-
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
 
     setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
     glPushMatrix();
@@ -175,11 +173,30 @@ void display(void)
     glTranslated(110,130,200);
     glutSolidSphere(50,SPHERE_N,SPHERE_N);
     glPopMatrix();
+}
+
+void display(void)
+{
+    int i;
+
+    glClear(GL_ACCUM_BUFFER_BIT);
+
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    for (i = 0; i < APERTURE_SAMPLES; ++i)
+    {
+        draw();
+
+        glAccum(GL_ACCUM, 1.0 / APERTURE_SAMPLES);
+
+        glFlush();
+    }
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
-    glPopMatrix();
+    glAccum(GL_RETURN, 1.0);
 
     glutSwapBuffers();
 }
@@ -296,7 +313,7 @@ int main(int argc, char** argv)
 
 
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_ACCUM);
     glutInitWindowSize(800,600);
     glutInitWindowPosition(220,100);
     glutCreateWindow("Computer Graphics - OpenGL framework");

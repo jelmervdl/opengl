@@ -2,7 +2,7 @@
 CC = gcc -g -Wall
 
 # GNU (faster)
-#CPP = gcc -O5 -Wall -fomit-frame-pointer -ffast-math 
+#CC = gcc -O5 -Wall -fomit-frame-pointer -ffast-math 
 
 UNAME=$(shell uname)
 
