@@ -40,7 +40,7 @@
 
 #define APERTURE_SAMPLES (8)
 
-#define FERMAT_C 10.0 / sqrt(APERTURE_SAMPLES)
+#define FERMAT_C 10.0 / sqrt(APERTURE_SAMPLES - 1)
 #define GOLDEN_ANGLE (137.508)
 
 enum MouseMode {
@@ -142,6 +142,7 @@ void display(void)
 
     for (i = 0; i < APERTURE_SAMPLES; ++i)
     {
+        // Use Fermat's spiral to find points for the eye
         r = FERMAT_C * sqrt(i);
         t = i * GOLDEN_ANGLE;
         x = r * cos(t);
