@@ -195,7 +195,11 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+    // gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+
+    // TODO what is this better than gluPerspective? Image is the same.
+    glFrustum(-200, 200, -150, 150, 500, 1000);
+    
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -238,8 +242,8 @@ void idle()
             break;
         
         case ROTATING:
-            camera_heading += 1.0 / 1000 * mouse_dx;
-            camera_pitch   += 1.0 / 1000 * mouse_dy;
+            camera_heading += 1.0 / 100 * mouse_dx;
+            camera_pitch   += 1.0 / 100 * mouse_dy;
             break;
         
         default:
