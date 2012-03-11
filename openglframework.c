@@ -30,6 +30,7 @@
 #endif
 
 #include "glslshaders.h"
+#include "glm.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -83,12 +84,12 @@ void draw(float x, float y)
 
     glLoadIdentity();
     gluLookAt(
-        200.0 + x, 200.0 + y, 1000.0,
+        200.0, 200.0, 1000.0,
         200.0, 200.0, 0.0,
         0.0, 1.0, 0.0);
 
     // better rotation by rotating around the point 200,200,200
-    glTranslated(200,200,200);
+    //glTranslated(200,200,200);
 
     // zoom & panning
     glTranslatef(camera_x, camera_y, camera_zoom);
@@ -100,7 +101,7 @@ void draw(float x, float y)
     glRotatef(camera_heading, 0, 1, 0);
 
     // ... and back to 0,0,0 origin
-    glTranslated(-200, -200, -200);
+    //glTranslated(-200, -200, -200);
 
     setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
     glPushMatrix();
@@ -195,10 +196,10 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    // gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
 
     // TODO what is this better than gluPerspective? Image is the same.
-    glFrustum(-200, 200, -150, 150, 500, 1000);
+    //glFrustum(-200, 200, -150, 150, 500, 1000);
     
     glMatrixMode(GL_MODELVIEW);
 }
