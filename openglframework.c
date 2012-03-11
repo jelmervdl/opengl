@@ -132,6 +132,11 @@ void draw(float x, float y)
     glTranslated(110,130,200);
     glutSolidSphere(50,SPHERE_N,SPHERE_N);
     glPopMatrix();
+    
+    //glmDraw();
+    //glmUnitize();
+    //glmScale(2);
+    //add normals
 }
 
 void display(void)
