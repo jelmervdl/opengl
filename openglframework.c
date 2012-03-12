@@ -37,13 +37,6 @@
 #include <math.h>
 #include <string.h>
 
-#define SPHERE_N (20)
-
-#define APERTURE_SAMPLES (8)
-
-#define FERMAT_C 10.0 / sqrt(APERTURE_SAMPLES - 1)
-#define GOLDEN_ANGLE (137.508)
-
 enum MouseMode {
     ZOOMING,
     PANNING,
@@ -66,6 +59,8 @@ int mouse_dy = 0;
 
 enum MouseMode mouse_mode = IDLE;
 
+GLMmodel *model;
+
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
     GLfloat ambient[] = {ka*r,ka*g,ka*b,1.0};
@@ -77,9 +72,8 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
 }
 
-void draw(float x, float y)
+void display(void)
 {
-    /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
@@ -87,9 +81,6 @@ void draw(float x, float y)
         200.0, 200.0, 1000.0,
         200.0, 200.0, 0.0,
         0.0, 1.0, 0.0);
-
-    // better rotation by rotating around the point 200,200,200
-    //glTranslated(200,200,200);
 
     // zoom & panning
     glTranslatef(camera_x, camera_y, camera_zoom);
@@ -100,68 +91,7 @@ void draw(float x, float y)
     // heading
     glRotatef(camera_heading, 0, 1, 0);
 
-    // ... and back to 0,0,0 origin
-    //glTranslated(-200, -200, -200);
-
-    setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
-    glPushMatrix();
-    glTranslated(90,320,100);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
-    glPushMatrix();
-    glTranslated(210,270,300);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
-    glPushMatrix();
-    glTranslated(290,170,150);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
-    glPushMatrix();
-    glTranslated(140,220,400);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
-    glPushMatrix();
-    glTranslated(110,130,200);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-    
-    //glmDraw();
-    //glmUnitize();
-    //glmScale(2);
-    //add normals
-}
-
-void display(void)
-{
-    int i;
-    float r, t, x, y;
-
-    glClear(GL_ACCUM_BUFFER_BIT);
-
-    for (i = 0; i < APERTURE_SAMPLES; ++i)
-    {
-        // Use Fermat's spiral to find points for the eye
-        r = FERMAT_C * sqrt(i);
-        t = i * GOLDEN_ANGLE;
-        x = r * cos(t);
-        y = r * sin(t);
-
-        draw(x, y);
-
-        glAccum(GL_ACCUM, 1.0 / APERTURE_SAMPLES);
-
-        glFlush();
-    }
-
-    glAccum(GL_RETURN, 1.0);
+    glmDraw(model, GLM_SMOOTH);
 
     glutSwapBuffers();
 }
@@ -203,9 +133,6 @@ void reshape(int w, int h)
     glLoadIdentity();
     gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
 
-    // TODO what is this better than gluPerspective? Image is the same.
-    //glFrustum(-200, 200, -150, 150, 500, 1000);
-    
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -276,6 +203,17 @@ void initLights()
     glEnable(GL_LIGHT0);
 }
 
+void initModel()
+{
+    model = glmReadOBJ("obj/devilduk.obj");
+
+    glmUnitize(model);
+
+    glmScale(model, 15.0);
+
+    glmFacetNormals(model);
+}
+
 int main(int argc, char** argv)
 {
 #if defined(NEED_GLEW)
@@ -306,12 +244,14 @@ int main(int argc, char** argv)
 
     initLights();
 
+    initModel();
+
     if (argc > 1 && strcmp(argv[1], "bonus\0") == 0) {
         glClearColor(0.8,0.8,0.8,0.0);
         initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
     }
     else {
-        glClearColor(0.0,0.0,0.0,0.0);
+        glClearColor(0.8,0.8,0.8,0.0);
         initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
     }
 
