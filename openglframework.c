@@ -78,7 +78,7 @@ void display(void)
 
     glLoadIdentity();
     gluLookAt(
-        0.0, 0.0, 1000.0,
+        0.0, 0.0, 10.0,
         0.0, 0.0, 0.0,
         0.0, 1.0, 0.0);
 
@@ -131,7 +131,7 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,10,2000);
+    gluPerspective(2.0 * atan2(h / 2.0, 2000.0) * 180.0 / M_PI, (GLdouble) w / (GLdouble) h , 1, 2000);
 
     glMatrixMode(GL_MODELVIEW);
 }
@@ -209,7 +209,7 @@ void initModel()
 
     glmUnitize(model);
 
-    glmScale(model, 200.0);
+    glmScale(model, 2.0);
 
     glmFacetNormals(model);
 
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 
 
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_ACCUM);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800,600);
     glutInitWindowPosition(220,100);
     glutCreateWindow("Computer Graphics - OpenGL framework");
@@ -268,6 +268,10 @@ int main(int argc, char** argv)
     glutIdleFunc(idle);
 
     glutMainLoop();
+
+    // Haha, this doesn't even get called because glutMainLoop _NEVER_ returns.
+    // But it is how real gentlemen program.
+    glmDelete(model);
 
     return 0;
 }
