@@ -78,8 +78,8 @@ void display(void)
 
     glLoadIdentity();
     gluLookAt(
-        200.0, 200.0, 1000.0,
-        200.0, 200.0, 0.0,
+        0.0, 0.0, 1000.0,
+        0.0, 0.0, 0.0,
         0.0, 1.0, 0.0);
 
     // zoom & panning
@@ -131,7 +131,7 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,10,2000);
 
     glMatrixMode(GL_MODELVIEW);
 }
@@ -209,7 +209,7 @@ void initModel()
 
     glmUnitize(model);
 
-    glmScale(model, 15.0);
+    glmScale(model, 200.0);
 
     glmFacetNormals(model);
 
