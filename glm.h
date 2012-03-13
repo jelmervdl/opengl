@@ -102,6 +102,23 @@ typedef struct _GLMmodel {
 
 } GLMmodel;
 
+typedef struct _GLMVBOmodel {
+  GLuint num_vertices;
+  GLuint vertices;
+
+  GLuint num_indices;
+  GLuint vertex_indices;
+
+  GLuint num_normals;
+  GLuint normals;
+
+  GLuint normal_indices;
+
+  GLuint num_triangles;
+
+  GLfloat color[4];
+} GLMVBOmodel;
+
 
 /* glmUnitize: "unitize" a model by translating it to the origin and
  * scaling it to fit in a unit cube around the origin.  Returns the
@@ -233,6 +250,12 @@ glmWriteOBJ(GLMmodel* model, char* filename, GLuint mode);
  */
 GLvoid
 glmDraw(GLMmodel* model, GLuint mode);
+
+GLMVBOmodel*
+glmInitVBO(GLMmodel *model);
+
+GLvoid
+glmDrawVBO(GLMVBOmodel* model, GLuint mode);
 
 /* glmList: Generates and returns a display list for the model using
  * the mode specified.

@@ -59,18 +59,7 @@ int mouse_dy = 0;
 
 enum MouseMode mouse_mode = IDLE;
 
-GLMmodel *model;
-
-void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
-{
-    GLfloat ambient[] = {ka*r,ka*g,ka*b,1.0};
-    GLfloat diffuse[] = {kd*r,kd*g,kd*b,1.0};
-    GLfloat specular[] = {ks,ks,ks,1.0};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
-}
+GLMVBOmodel *model;
 
 void display(void)
 {
@@ -91,7 +80,7 @@ void display(void)
     // heading
     glRotatef(camera_heading, 0, 1, 0);
 
-    glmDraw(model, GLM_SMOOTH);
+    glmDrawVBO(model, GLM_SMOOTH);
 
     glutSwapBuffers();
 }
@@ -205,15 +194,19 @@ void initLights()
 
 void initModel()
 {
-    model = glmReadOBJ("obj/devilduk.obj");
+    GLMmodel *plain_model;
+    plain_model = glmReadOBJ("obj/devilduk.obj");
 
-    glmUnitize(model);
+    glmUnitize(plain_model);
 
-    glmScale(model, 2.0);
+    glmScale(plain_model, 2.0);
 
-    glmFacetNormals(model);
+    glmFacetNormals(plain_model);
+    glmVertexNormals(plain_model, .5);
 
-    glmVertexNormals(model, .5);
+    model = glmInitVBO(plain_model);
+
+    glmDelete(plain_model);
 }
 
 int main(int argc, char** argv)
@@ -268,10 +261,6 @@ int main(int argc, char** argv)
     glutIdleFunc(idle);
 
     glutMainLoop();
-
-    // Haha, this doesn't even get called because glutMainLoop _NEVER_ returns.
-    // But it is how real gentlemen program.
-    glmDelete(model);
 
     return 0;
 }
