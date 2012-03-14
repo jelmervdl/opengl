@@ -247,7 +247,7 @@ int main(int argc, char** argv)
     }
     else {
         glClearColor(0.8,0.8,0.8,0.0);
-        initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
+        // initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
     }
 
     /* Register GLUT callback functions */
