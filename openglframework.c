@@ -59,7 +59,7 @@ int mouse_dy = 0;
 
 enum MouseMode mouse_mode = IDLE;
 
-GLMVBOmodel *model;
+GLMmodel *model;
 
 void display(void)
 {
@@ -80,7 +80,7 @@ void display(void)
     // heading
     glRotatef(camera_heading, 0, 1, 0);
 
-    glmDrawVBO(model, GLM_SMOOTH);
+    glmDrawVBO(model);
 
     glutSwapBuffers();
 }
@@ -194,19 +194,19 @@ void initLights()
 
 void initModel()
 {
-    GLMmodel *plain_model;
-    plain_model = glmReadOBJ("obj/devilduk.obj");
+    //GLMmodel *model;
+    model = glmReadOBJ("obj/devilduk.obj");
 
-    glmUnitize(plain_model);
+    glmUnitize(model);
 
-    glmScale(plain_model, 2.0);
+    glmScale(model, 2.0);
 
-    glmFacetNormals(plain_model);
-    glmVertexNormals(plain_model, .5);
+    glmFacetNormals(model);
+    glmVertexNormals(model, .5);
 
-    model = glmInitVBO(plain_model);
+    glmInitVBO(model);
 
-    glmDelete(plain_model);
+    //glmDelete(plain_model);
 }
 
 int main(int argc, char** argv)

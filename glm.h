@@ -251,11 +251,9 @@ glmWriteOBJ(GLMmodel* model, char* filename, GLuint mode);
 GLvoid
 glmDraw(GLMmodel* model, GLuint mode);
 
-GLMVBOmodel*
-glmInitVBO(GLMmodel *model);
+GLvoid glmInitVBO(GLMmodel *model);
 
-GLvoid
-glmDrawVBO(GLMVBOmodel* model, GLuint mode);
+GLvoid glmDrawVBO(GLMmodel *model);
 
 /* glmList: Generates and returns a display list for the model using
  * the mode specified.
