@@ -200,13 +200,11 @@ void initModel()
     glmUnitize(model);
 
     glmScale(model, 2.0);
-
+	
     glmFacetNormals(model);
-    glmVertexNormals(model, .5);
+    glmVertexNormals(model, 90);
 
     glmInitVBO(model);
-
-    //glmDelete(plain_model);
 }
 
 int main(int argc, char** argv)

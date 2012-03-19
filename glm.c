@@ -1695,22 +1695,9 @@ GLvoid glmInitVBO(GLMmodel *model)
 {
   GLMtriangle *triangle;
 
-  //GLMVBOmodel *vbo_model = (GLMVBOmodel*) malloc(sizeof(GLMVBOmodel));
-  //vbo_model->num_triangles = model->numtriangles;
-  //memcpy(vbo_model->color, model->materials[0].ambient, sizeof(GLfloat) * 4);
-
-  // glGenBuffersARB(1, &vbo_model->normals);
   glGenBuffersARB(1, &vertexbuffer);
   glGenBuffersARB(1, &normalbuffer);
 
-  // glGenBuffersARB(1, &vbo_model->normal_indices);
-  //glGenBuffersARB(1, &vbo_model->vertex_indices);
-
-  // glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->normals);
-  // glBufferDataARB(GL_ARRAY_BUFFER_ARB,
-  //   3 * sizeof(GLfloat) * (model->numnormals + 1),
-  //   &model->normals,
-  //   GL_STATIC_DRAW);
   GLfloat* vertices = (GLfloat*) malloc(sizeof(GLfloat) * model->numtriangles * 3 * 3);
   GLfloat* normals = (GLfloat*) malloc(sizeof(GLfloat) * model->numtriangles * 3 * 3);
   unsigned int i, v = 0;
@@ -1736,43 +1723,8 @@ GLvoid glmInitVBO(GLMmodel *model)
     normals,
     GL_STATIC_DRAW);
 
-  // glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_model->vertex_indices);
-  // glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 3 * sizeof(GLuint) model->numtriangles, NULL, GL_STATIC_DRAW);
-
-  // glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_model->normal_indices);
-  // glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 3 * sizeof(GLuint) * model->numtriangles, NULL, GL_STATIC_DRAW);
-
-  //GLfloat *buffer = malloc(3 * sizeof(GLint) * model->numtriangles);
-
-  //for (i = 0; i < model->numtriangles; i++) {
-    //triangle = &model->triangles[i];
-
-    //memcpy(&buffer[3 * i], triangle->vindices, sizeof(GLuint) * 3);
-
-    /*
-    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_model->vertex_indices);
-    glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-      3 * sizeof(GLuint) * i,
-      3 * sizeof(GLuint),
-      triangle->vindices);
-
-    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_model->normal_indices);
-    glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-      3 * sizeof(GLuint) * i,
-      3 * sizeof(GLuint),
-      triangle->nindices);
-    */
-  //}
-
-  //glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo_model->vertex_indices);
-  //glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 3 * sizeof(GLuint) * model->numtriangles, buffer, GL_STATIC_DRAW);
-
-  //assert_gl_ok
-
-  //free(buffer);
-
-  //return vbo_model;
- 
+  free(vertices);
+  free(normals);
 }
 
 GLvoid glmDrawVBO(GLMmodel* model)
@@ -1809,10 +1761,11 @@ GLvoid glmDrawVBO(GLMmodel* model)
   //glBegin(GL_TRIANGLES);
   */
 
-  //assert_gl_ok
 
   // glColor3fv(model->color);
+  
 
+  
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_NORMAL_ARRAY);
 
@@ -1821,14 +1774,11 @@ GLvoid glmDrawVBO(GLMmodel* model)
 
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexbuffer);
   glVertexPointer(3, GL_FLOAT, 0, 0);
-   printf("hoi init ging wel ok\n");
-  //glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, model->vertex_indices);
+
   glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
 
   glDisableClientState(GL_NORMAL_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
-
-  //assert_gl_ok
 }
 
 /* glmList: Generates and returns a display list for the model using
