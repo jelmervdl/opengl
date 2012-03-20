@@ -239,7 +239,7 @@ int main(int argc, char** argv)
 
     initModel();
 
-    if (argc > 1 && strcmp(argv[1], "bonus\0") == 0) {
+    if (argc > 1 && strcmp(argv[1], "toon\0") == 0) {
         glClearColor(0.8,0.8,0.8,0.0);
         initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
     }
