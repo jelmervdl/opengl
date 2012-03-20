@@ -105,8 +105,10 @@ typedef struct _GLMmodel {
 typedef struct _GLMVBOmodel {
   GLuint vertexbuffer;
   GLuint normalbuffer;
+  GLuint colorbuffer;
   GLuint num_triangles;
 } GLMVBOmodel;
+
 
 
 /* glmUnitize: "unitize" a model by translating it to the origin and

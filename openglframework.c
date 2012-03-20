@@ -205,7 +205,7 @@ void initModel()
 
     model = glmInitVBO(object);
 
-    glmDelete(object);
+    // glmDelete(object);
 }
 
 int main(int argc, char** argv)
@@ -248,9 +248,12 @@ int main(int argc, char** argv)
         glClearColor(0.0, 0.0, 0.0, 0.0);
         initGLSLProgram("vertexshader.glsl", "goochshader.glsl");   
     }
-    else {
+    else if (argc > 1 && strcmp(argv[1], "phong\0") == 0) {
         glClearColor(0.8,0.8,0.8,0.0);
         initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
+    }
+    else {
+        glClearColor(0.8,0.8,0.8,0.0);
     }
 
     /* Register GLUT callback functions */

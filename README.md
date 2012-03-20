@@ -1,13 +1,12 @@
 OpenGL framework
 ================
-
-Currently it contains three different shaders, which you can switch between by passing commandline arguments.
+Currently it contains three different shaders, which you can switch between by passing commandline arguments. If you don't pass any arguments, the default OpenGL shader will be used.
 
 Phong shading
 -------------
-The default shader. Don't pass an argument, and this is what you'll get.
+Yeah, the famous one
 	
-	openglframework
+	openglframework phong
 
 Gooch shading
 -------------
