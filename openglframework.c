@@ -59,7 +59,7 @@ int mouse_dy = 0;
 
 enum MouseMode mouse_mode = IDLE;
 
-GLMmodel *model;
+GLMVBOmodel *model;
 
 void display(void)
 {
@@ -194,17 +194,18 @@ void initLights()
 
 void initModel()
 {
-    //GLMmodel *model;
-    model = glmReadOBJ("obj/devilduk.obj");
+    GLMmodel *object = glmReadOBJ("obj/devilduk.obj");
 
-    glmUnitize(model);
+    glmUnitize(object);
 
-    glmScale(model, 2.0);
+    glmScale(object, 2.0);
 	
-    glmFacetNormals(model);
-    glmVertexNormals(model, 90);
+    glmFacetNormals(object);
+    glmVertexNormals(object, 90);
 
-    glmInitVBO(model);
+    model = glmInitVBO(object);
+
+    glmDelete(object);
 }
 
 int main(int argc, char** argv)

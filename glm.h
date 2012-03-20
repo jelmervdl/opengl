@@ -103,20 +103,9 @@ typedef struct _GLMmodel {
 } GLMmodel;
 
 typedef struct _GLMVBOmodel {
-  GLuint num_vertices;
-  GLuint vertices;
-
-  GLuint num_indices;
-  GLuint vertex_indices;
-
-  GLuint num_normals;
-  GLuint normals;
-
-  GLuint normal_indices;
-
+  GLuint vertexbuffer;
+  GLuint normalbuffer;
   GLuint num_triangles;
-
-  GLfloat color[4];
 } GLMVBOmodel;
 
 
@@ -248,12 +237,11 @@ glmWriteOBJ(GLMmodel* model, char* filename, GLuint mode);
  *            GLM_TEXTURE -  render with texture coords
  *            GLM_FLAT and GLM_SMOOTH should not both be specified.
  */
-GLvoid
-glmDraw(GLMmodel* model, GLuint mode);
+GLvoid glmDraw(GLMmodel* model, GLuint mode);
 
-GLvoid glmInitVBO(GLMmodel *model);
+GLMVBOmodel *glmInitVBO(GLMmodel *model);
 
-GLvoid glmDrawVBO(GLMmodel *model);
+GLvoid glmDrawVBO(GLMVBOmodel *model);
 
 /* glmList: Generates and returns a display list for the model using
  * the mode specified.
