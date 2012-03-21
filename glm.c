@@ -1802,8 +1802,6 @@ GLvoid glmDrawVBO(GLMVBOmodel* vbo_model)
   //glBegin(GL_TRIANGLES);
   */
 
-  glEnable(GL_COLOR_MATERIAL);
-  
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_NORMAL_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
@@ -1813,6 +1811,8 @@ GLvoid glmDrawVBO(GLMVBOmodel* vbo_model)
 
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->vertexbuffer);
   glVertexPointer(3, GL_FLOAT, 0, 0);
+
+  // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->colorbuffer);
   glColorPointer(4, GL_FLOAT, 0, 0);
