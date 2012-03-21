@@ -241,7 +241,7 @@ int main(int argc, char** argv)
 
     if (argc > 1 && strcmp(argv[1], "bonus\0") == 0) {
         glClearColor(0.8,0.8,0.8,0.0);
-        initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
+        initGLSLProgram("vertexshader.glsl", "goochshader.glsl");
     }
     else {
         glClearColor(0.8,0.8,0.8,0.0);
