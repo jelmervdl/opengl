@@ -241,22 +241,17 @@ int main(int argc, char** argv)
 
     initModel();
 
-    if (argc > 1 && strcmp(argv[1], "toon\0") == 0) {
-        glClearColor(0.8,0.8,0.8,0.0);
-        initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
-    }
-    else if (argc > 1 && strcmp(argv[1], "gooch\0") == 0) {
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        initGLSLProgram("vertexshader.glsl", "goochshader.glsl");   
-    }
-    else if (argc > 1 && strcmp(argv[1], "phong\0") == 0) {
-        glClearColor(0.8,0.8,0.8,0.0);
-        initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
-    }
-    else {
-        glClearColor(0.8,0.8,0.8,0.0);
-    }
+    glClearColor(0.8,0.8,0.8,0.0);
 
+    if (argc > 1 && strcmp(argv[1], "toon\0") == 0)
+        initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
+    
+    else if (argc > 1 && strcmp(argv[1], "gooch\0") == 0)
+        initGLSLProgram("vertexshader.glsl", "goochshader.glsl");   
+    
+    else if (argc > 1 && strcmp(argv[1], "phong\0") == 0)
+        initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
+    
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
