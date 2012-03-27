@@ -40,7 +40,7 @@
 
 typedef struct _Orbit {
     GLfloat center[3];
-    GLfloat up[3];
+    GLfloat axis[3];
     GLfloat radius;
     GLfloat speed;
 } Orbit;
@@ -139,7 +139,17 @@ void drawPlanet(Planet* planet, float t)
     glBindTexture(GL_TEXTURE_2D, planet->texture);
 
     glPushMatrix();
+
+    // Translate to the center of the orbit
     glTranslatef(planet->orbit.center[0], planet->orbit.center[1], planet->orbit.center[2]);
+
+    // Rotate around the orbit
+    glRotatef(t * planet->orbit.speed, planet->orbit.axis[0], planet->orbit.axis[1], planet->orbit.axis[2]);
+
+    // translate to a position in the orbit
+    glTranslatef(planet->orbit.radius, 0, 0);
+
+    // Rotate the planet around it's axis
     glRotatef(t * planet->speed, planet->axis[0], planet->axis[1], planet->axis[2]);
     gluSphere(quadric, planet->radius, SPHERE_N, SPHERE_N);
     glPopMatrix();
@@ -153,7 +163,7 @@ void display(void)
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(200.0,200.0,1000.0,200.0,200.0,0.0,0.0,1.0,0.0);
+    gluLookAt(0.0,0.0,1000.0,0.0,0.0,0.0,0.0,1.0,0.0);
 
     glPushMatrix();
 
@@ -312,10 +322,11 @@ void initPlanets()
     planets = malloc(sizeof(Planet*) * 2);
 
     Planet *earth = malloc(sizeof(Planet));
-    earth->orbit.center[0] = 90;
-    earth->orbit.center[1] = 320;
-    earth->orbit.center[2] = 100;
-    earth->radius = 50;
+    setVector(earth->orbit.center, 0, 0, 0);
+    setVector(earth->orbit.axis, 0, 1, 0);
+    earth->orbit.radius = 150; // in million km
+    earth->orbit.speed = 1.0 / 10; // should be 1.0 / 365;
+    earth->radius = 10;
     earth->texture = loadTexture("textures/earth.png");
 
     earth->axis[0] = 0;
@@ -326,10 +337,10 @@ void initPlanets()
     planets[0] = earth;
     
     Planet *sun = malloc(sizeof(Planet));
-    sun->orbit.center[0] = 0;
-    sun->orbit.center[1] = 0;
-    sun->orbit.center[2] = 0;
-    sun->radius = 100;
+    setVector(sun->orbit.center, 0, 0, 0);
+    setVector(sun->orbit.axis, 0, 1, 0);
+    sun->orbit.radius = 0;
+    sun->radius = 40;
     sun->texture = loadTexture("textures/sun.png");
 
     setVector(sun->axis, 0, 1, 0);
