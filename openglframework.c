@@ -106,7 +106,7 @@ void setVector(GLfloat *target, GLfloat x, GLfloat y, GLfloat z)
     target[2] = z;
 }
 
-void setVector4(GLfloat *target, GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+void setColor(GLfloat *target, GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
     target[0] = r;
     target[1] = g;
@@ -143,6 +143,27 @@ GLuint loadTexture(char* filename)
    return texName;
 }
 
+void drawCircle(float radius)
+{
+    float n;
+
+    glBegin(GL_LINE_LOOP);
+
+    // Disable all the other material properties completely
+    // setGlMaterial(0.0, 0.0, 0.0, 0, 0, 0, 0);
+
+    for (n = 0; n < 1.0; n += 0.01)
+    {
+        glColor3f(1.0 - n, 0, 0);
+        glVertex3f(cos(n * 2 * M_PI) * radius, 0, sin(n * 2 * M_PI) * radius);
+    }
+
+    // GLfloat no_emission[] = {0, 0, 0, 1};
+    // glMaterialfv(GL_FRONT, GL_EMISSION, no_emission);
+
+    glEnd();
+}
+
 void drawPlanet(Planet* planet, float t)
 {
     int i;
@@ -155,6 +176,8 @@ void drawPlanet(Planet* planet, float t)
     // Rotate around the orbit
     glRotatef(t * planet->orbit.speed, planet->orbit.axis[0], planet->orbit.axis[1], planet->orbit.axis[2]);
 
+    drawCircle(planet->orbit.radius);
+
     // translate to a position in the orbit
     glTranslatef(planet->orbit.radius, 0, 0);
 
@@ -165,9 +188,14 @@ void drawPlanet(Planet* planet, float t)
     glRotatef(t * planet->speed, planet->axis[0], planet->axis[1], planet->axis[2]);
 
     // Draw the planet
-    glMaterialfv(GL_FRONT, GL_EMISSION, planet->mat_emission);
     glBindTexture(GL_TEXTURE_2D, planet->texture);
+
+    // 
+    glColor4fv(planet->mat_emission);
     gluSphere(quadric, planet->radius, SPHERE_N, SPHERE_N);
+
+    // disable the texture again
+    glBindTexture(GL_TEXTURE_2D, 0);
     glPopMatrix();
 }
 
@@ -197,11 +225,13 @@ void display(void)
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     
     glEnableClientState(GL_VERTEX_ARRAY);
+    // glEnableClientState(GL_COLOR_ARRAY);
 
     t = (float) glutGet(GLUT_ELAPSED_TIME) / 20;
 
     drawPlanet(sun, t);
 
+    // glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
 
     glDisable(GL_TEXTURE_2D);
@@ -246,7 +276,7 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,5000);
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,1,5000);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -303,20 +333,22 @@ void idle()
 
 void initLights()
 {
-    GLfloat mat_diffuse[] = {.7, .7, .7, 1.0};
-    GLfloat mat_specular[] = { .3, .3, .3, 1.0 };
-    GLfloat mat_shininess[] = { 50.0 };
+    GLfloat light_ambient[] = {0, 0, 0, 1};
+    GLfloat light_diffuse[] = {1, 1, 1, 1};
+    GLfloat light_specular[] = {1, 1, 1, 1};
+    GLfloat light_shininess[] = { 50.0 };
     GLfloat light_position[] = { -100.0, 0.0, 0.0 };
     
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_SHININESS, light_shininess);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
  
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
-    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR);
+    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 }
 
 void initQuadric()
@@ -341,7 +373,8 @@ Planet *initPlanet()
 
     planet->num_moons = 0;
 
-    setVector4(planet->mat_emission, 0, 0, 0, 1);
+    planet->texture = 0;
+    setColor(planet->mat_emission, 0, 0, 0, 1);
 
     return planet;
 }
@@ -371,7 +404,7 @@ void initPlanets()
     sun->radius = 40;
     sun->texture = loadTexture("textures/sun.png");
     sun->speed = 1.0 / 25.38;
-    setVector4(sun->mat_emission, .5, .5, .5, 1.0);
+    setColor(sun->mat_emission, .3, .3, .3, 1.0);
 
     Planet *earth = initPlanet();
     earth->orbit.radius = 150; // in million km
@@ -421,7 +454,12 @@ int main(int argc, char** argv)
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_EMISSION);
+
     initLights();
+
+    setGlMaterial(1.0, 1.0, 1.0, .1, .9, .3, 16);
 
     initQuadric();
 
