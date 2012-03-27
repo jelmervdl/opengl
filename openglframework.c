@@ -29,7 +29,7 @@
 #include <GL/glut.h>
 #endif
 
-#include "glslshaders.h"
+#include "lodepng.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,54 +37,6 @@
 #include <string.h>
 
 #define SPHERE_N (20)
-
-// GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
-// GLubyte cubeIndices[2*12] = {
-//         0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-//         1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-//         4,7, 5,7, 6,7                 /* From one minus to zero minusses */
-//     };
-
-/*
-  3 ----- 2
- /|      /|
-7 ----- 6 |
-| |     | |
-| 0 ----| 1
-|/      |/
-4 ----- 5
-*/
-
-GLfloat cubeVertices[] = {
-    -1,-1,-1, // 0
-     1,-1,-1, // 1
-     1, 1,-1, // 2
-    -1, 1,-1, // 3
-    -1,-1, 1, // 4
-     1,-1, 1, // 5
-     1, 1, 1, // 6
-    -1, 1, 1, // 7
-};
-
-GLubyte cubeIndices[] = {
-    0,1,2,3, // back
-    0,1,5,4, // bottom
-    4,7,3,0, // left
-    1,2,6,5, // right
-    2,3,7,6, // top
-    4,5,6,7  // front
-};
-
-GLfloat cubeColors[] = {
-    1,0,0, // 0 - left - red
-    1,1,1, // 1
-    1,1,1, // 2
-    1,1,0, // 3 - back - yellow
-    0,1,0, // 4 - bottom - lime
-    0,0,1, // 5 - right - blue
-    0,1,1, // 6 - top - cyan
-    1,0,1  // 7 - front - magenta
-};
 
 enum MouseMode {
     ZOOMING,
@@ -108,6 +60,9 @@ int mouse_dy = 0;
 
 enum MouseMode mouse_mode = IDLE;
 
+GLUquadric *quadric;
+GLuint texture;
+
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
     GLfloat ambient[] = {ka*r,ka*g,ka*b,1.0};
@@ -118,6 +73,36 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
 }
+
+GLuint loadTexture(char* filename)
+{
+   unsigned char* buffer;
+   unsigned char* image;
+   size_t buffersize, imagesize;
+   GLuint texName;
+   LodePNG_Decoder decoder;
+
+   LodePNG_loadFile(&buffer, &buffersize, filename);
+   LodePNG_Decoder_init(&decoder);
+   decoder.infoRaw.color.colorType = 6; /* Load image as RGBA */
+   LodePNG_decode(&decoder, &image, &imagesize, buffer, buffersize);
+   if(decoder.error) {
+      printf("Error reading in png image: %d\n", decoder.error);
+      exit(1);      
+   } else {
+      glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+      glGenTextures(1,&texName);
+      glBindTexture(GL_TEXTURE_2D,texName);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+      glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,decoder.infoPng.width,
+                   decoder.infoPng.height,0, GL_RGBA,GL_UNSIGNED_BYTE,image);
+   } 
+   return texName;
+}
+
 
 void display(void)
 {
@@ -143,41 +128,48 @@ void display(void)
     // ... and back to 0,0,0 origin
     glTranslated(-200, -200, -200);
 
+    // paint!
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
 
     setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
     glPushMatrix();
     glTranslated(90,320,100);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
     setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
     glPushMatrix();
     glTranslated(210,270,300);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
     setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
     glPushMatrix();
     glTranslated(290,170,150);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
     setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
     glPushMatrix();
     glTranslated(140,220,400);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
     setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
     glPushMatrix();
     glTranslated(110,130,200);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
+
+    glDisable(GL_TEXTURE_2D);
 
     glPopMatrix();
 
@@ -286,6 +278,22 @@ void initLights()
  
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+
+    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR);
+}
+
+void initQuadric()
+{
+    quadric = gluNewQuadric();
+    gluQuadricDrawStyle(quadric, GLU_FILL);
+    gluQuadricOrientation(quadric, GLU_OUTSIDE);
+    gluQuadricNormals(quadric, GLU_SMOOTH);
+    gluQuadricTexture(quadric, GL_TRUE);
+}
+
+void initTextures()
+{
+    texture = loadTexture("earthmap1k.png");
 }
 
 int main(int argc, char** argv)
@@ -318,15 +326,10 @@ int main(int argc, char** argv)
 
     initLights();
 
-    if (argc > 1 && strcmp(argv[1], "bonus\0") == 0) {
-        glClearColor(0.8,0.8,0.8,0.0);
-        initGLSLProgram("vertexshader.glsl", "cellshader.glsl");
-    }
-    else {
-        glClearColor(0.0,0.0,0.0,0.0);
-        initGLSLProgram("vertexshader.glsl", "fragmentshader.glsl");
-    }
+    initQuadric();
 
+    initTextures();
+    
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
