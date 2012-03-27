@@ -84,8 +84,7 @@ enum MouseMode mouse_mode = IDLE;
 
 GLUquadric *quadric;
 
-int num_planets;
-Planet** planets;
+Planet *sun;
 
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
@@ -163,7 +162,7 @@ void drawPlanet(Planet* planet, float t)
 
 void display(void)
 {
-    int i; /* C99 is the most ugly thing ever created. It is truly an abomination. */
+    // C99 is the most ugly thing ever created. It is truly an abomination.
     float t;
 
     /* Clear all pixels */
@@ -196,8 +195,7 @@ void display(void)
 
     t = (float) glutGet(GLUT_ELAPSED_TIME) / 20;
 
-    for (i = 0; i < num_planets; ++i)
-        drawPlanet(planets[i], t);
+    drawPlanet(sun, t);
 
     glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -323,55 +321,66 @@ void initQuadric()
     gluQuadricTexture(quadric, GL_TRUE);
 }
 
+Planet *initPlanet()
+{
+    Planet *planet = malloc(sizeof(Planet));
+    
+    setVector(planet->orbit.center, 0, 0, 0);
+    setVector(planet->orbit.axis, 0, 1, 0);
+    planet->orbit.speed = 0;
+
+    setVector(planet->axis, 0, 1, 0);
+    planet->speed = 1;
+
+    planet->num_moons = 0;
+
+    return planet;
+}
+
+void addMoon(Planet *moon, Planet *planet)
+{
+    // Twilight..
+    Planet** new_moons = malloc(sizeof(Planet*) * planet->num_moons + 1);
+
+    // Copy all of its current moon (pointers)
+    memcpy(new_moons, planet->moons, sizeof(Planet*) * planet->num_moons);
+
+    new_moons[planet->num_moons] = moon;
+
+    // Free old list of planets (if there was one)
+    if (planet->num_moons > 0)
+        free(planet->moons);
+
+    planet->moons = new_moons;
+    planet->num_moons++;
+}
+
 void initPlanets()
 {
-    planets = malloc(sizeof(Planet*) * 2);
-
-    Planet *earth = malloc(sizeof(Planet));
-    setVector(earth->orbit.center, 0, 0, 0);
-    setVector(earth->orbit.axis, 0, 1, 0);
-    earth->orbit.radius = 150; // in million km
-    earth->orbit.speed = 1.0 / 10; // should be 1.0 / 365;
-    earth->radius = 10;
-    earth->texture = loadTexture("textures/earth.png");
-
-    earth->axis[0] = 0;
-    earth->axis[1] = 1;
-    earth->axis[2] = 0;
-    earth->speed = 1;
-
-    Planet *moon = malloc(sizeof(Planet));
-    setVector(moon->orbit.center, 0, 0, 0);
-    setVector(moon->orbit.axis, 1, 1, 0);
-    moon->orbit.radius = 20;
-    moon->orbit.speed = 1.0 / 5; // 1.0 / 28;
-    moon->radius = 5;
-    moon->texture = loadTexture("textures/moon.png");
-
-    setVector(moon->axis, 0, 1, 0);
-    moon->speed = 1.0 / 5;
-    moon->num_moons = 0;
-
-    earth->num_moons = 1;
-    earth->moons = malloc(sizeof(Planet*) * 1);
-    earth->moons[0] = moon;
-
-
-    planets[0] = earth;
-    
-    Planet *sun = malloc(sizeof(Planet));
-    setVector(sun->orbit.center, 0, 0, 0);
-    setVector(sun->orbit.axis, 0, 1, 0);
+    sun = initPlanet();
     sun->orbit.radius = 0;
     sun->radius = 40;
     sun->texture = loadTexture("textures/sun.png");
-
-    setVector(sun->axis, 0, 1, 0);
     sun->speed = 1.0 / 25.38;
-    sun->num_moons = 0;
 
-    planets[1] = sun;
-    num_planets = 2;
+    Planet *earth = initPlanet();
+    earth->orbit.radius = 150; // in million km
+    earth->orbit.speed = 1.0 / 20; // should be 1.0 / 365;
+    earth->radius = 10;
+    earth->texture = loadTexture("textures/earth.png");
+    earth->speed = 1;
+
+    addMoon(earth, sun);
+
+    Planet *moon = initPlanet();
+    setVector(moon->orbit.axis, 1, 1, 0);
+    moon->orbit.radius = 20;
+    moon->orbit.speed = 1.0 / 2; // 1.0 / 28;
+    moon->radius = 5;
+    moon->texture = loadTexture("textures/moon.png");
+    moon->speed = 1.0 / 5;
+    
+    addMoon(moon, earth);
 }
 
 int main(int argc, char** argv)
