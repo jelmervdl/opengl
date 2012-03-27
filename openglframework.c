@@ -58,6 +58,8 @@ typedef struct _Planet {
 
     unsigned int num_moons;
     struct _Planet **moons;
+
+    GLfloat mat_emission[4];
 } Planet;
 
 enum MouseMode {
@@ -102,6 +104,14 @@ void setVector(GLfloat *target, GLfloat x, GLfloat y, GLfloat z)
     target[0] = x;
     target[1] = y;
     target[2] = z;
+}
+
+void setVector4(GLfloat *target, GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+{
+    target[0] = r;
+    target[1] = g;
+    target[2] = b;
+    target[3] = a;
 }
 
 GLuint loadTexture(char* filename)
@@ -155,6 +165,7 @@ void drawPlanet(Planet* planet, float t)
     glRotatef(t * planet->speed, planet->axis[0], planet->axis[1], planet->axis[2]);
 
     // Draw the planet
+    glMaterialfv(GL_FRONT, GL_EMISSION, planet->mat_emission);
     glBindTexture(GL_TEXTURE_2D, planet->texture);
     gluSphere(quadric, planet->radius, SPHERE_N, SPHERE_N);
     glPopMatrix();
@@ -168,12 +179,9 @@ void display(void)
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(0.0,0.0,1000.0,0.0,0.0,0.0,0.0,1.0,0.0);
-
+    gluLookAt(0.0,0.0,1000.0, 0.0,0.0,0.0, 0.0,1.0,0.0);
+    
     glPushMatrix();
-
-    // better rotation by rotating around the point 200,200,200
-    // glTranslated(200,200,200);
 
     // zoom & panning
     glTranslatef(camera_x, camera_y, camera_zoom);
@@ -183,9 +191,6 @@ void display(void)
 
     // heading
     glRotatef(camera_heading, 0, 1, 0);
-
-    // ... and back to 0,0,0 origin
-    // glTranslated(-200, -200, -200);
 
     // paint!
     glEnable(GL_TEXTURE_2D);
@@ -298,10 +303,12 @@ void idle()
 
 void initLights()
 {
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_diffuse[] = {.7, .7, .7, 1.0};
+    GLfloat mat_specular[] = { .3, .3, .3, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
-    GLfloat light_position[] = { 200.0, 200.0, 200.0 };
+    GLfloat light_position[] = { -100.0, 0.0, 0.0 };
     
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -334,6 +341,8 @@ Planet *initPlanet()
 
     planet->num_moons = 0;
 
+    setVector4(planet->mat_emission, 0, 0, 0, 1);
+
     return planet;
 }
 
@@ -362,6 +371,7 @@ void initPlanets()
     sun->radius = 40;
     sun->texture = loadTexture("textures/sun.png");
     sun->speed = 1.0 / 25.38;
+    setVector4(sun->mat_emission, .5, .5, .5, 1.0);
 
     Planet *earth = initPlanet();
     earth->orbit.radius = 150; // in million km
