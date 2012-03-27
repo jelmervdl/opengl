@@ -57,7 +57,7 @@ typedef struct _Planet {
     GLuint texture;
 
     unsigned int num_moons;
-    struct _Planet *moons;
+    struct _Planet **moons;
 } Planet;
 
 enum MouseMode {
@@ -136,7 +136,7 @@ GLuint loadTexture(char* filename)
 
 void drawPlanet(Planet* planet, float t)
 {
-    glBindTexture(GL_TEXTURE_2D, planet->texture);
+    int i;
 
     glPushMatrix();
 
@@ -149,8 +149,14 @@ void drawPlanet(Planet* planet, float t)
     // translate to a position in the orbit
     glTranslatef(planet->orbit.radius, 0, 0);
 
+    for (i = 0; i < planet->num_moons; ++i)
+        drawPlanet(planet->moons[i], t);
+
     // Rotate the planet around it's axis
     glRotatef(t * planet->speed, planet->axis[0], planet->axis[1], planet->axis[2]);
+
+    // Draw the planet
+    glBindTexture(GL_TEXTURE_2D, planet->texture);
     gluSphere(quadric, planet->radius, SPHERE_N, SPHERE_N);
     glPopMatrix();
 }
@@ -334,6 +340,23 @@ void initPlanets()
     earth->axis[2] = 0;
     earth->speed = 1;
 
+    Planet *moon = malloc(sizeof(Planet));
+    setVector(moon->orbit.center, 0, 0, 0);
+    setVector(moon->orbit.axis, 1, 1, 0);
+    moon->orbit.radius = 20;
+    moon->orbit.speed = 1.0 / 5; // 1.0 / 28;
+    moon->radius = 5;
+    moon->texture = loadTexture("textures/moon.png");
+
+    setVector(moon->axis, 0, 1, 0);
+    moon->speed = 1.0 / 5;
+    moon->num_moons = 0;
+
+    earth->num_moons = 1;
+    earth->moons = malloc(sizeof(Planet*) * 1);
+    earth->moons[0] = moon;
+
+
     planets[0] = earth;
     
     Planet *sun = malloc(sizeof(Planet));
@@ -345,6 +368,7 @@ void initPlanets()
 
     setVector(sun->axis, 0, 1, 0);
     sun->speed = 1.0 / 25.38;
+    sun->num_moons = 0;
 
     planets[1] = sun;
     num_planets = 2;
