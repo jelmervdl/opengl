@@ -38,6 +38,28 @@
 
 #define SPHERE_N (20)
 
+typedef struct _Orbit {
+    GLfloat center[3];
+    GLfloat up[3];
+    GLfloat radius;
+    GLfloat speed;
+} Orbit;
+
+typedef struct _Planet {
+    Orbit orbit;
+
+    /* up-vector and speed for its own rotation */
+    GLfloat axis[3];
+    GLfloat speed;
+    GLfloat radius;
+    
+    char *name;
+    GLuint texture;
+
+    unsigned int num_moons;
+    struct _Planet *moons;
+} Planet;
+
 enum MouseMode {
     ZOOMING,
     PANNING,
@@ -61,7 +83,9 @@ int mouse_dy = 0;
 enum MouseMode mouse_mode = IDLE;
 
 GLUquadric *quadric;
-GLuint texture;
+
+int num_planets;
+Planet** planets;
 
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
@@ -72,6 +96,13 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
+}
+
+void setVector(GLfloat *target, GLfloat x, GLfloat y, GLfloat z)
+{
+    target[0] = x;
+    target[1] = y;
+    target[2] = z;
 }
 
 GLuint loadTexture(char* filename)
@@ -103,9 +134,22 @@ GLuint loadTexture(char* filename)
    return texName;
 }
 
+void drawPlanet(Planet* planet, float t)
+{
+    glBindTexture(GL_TEXTURE_2D, planet->texture);
+
+    glPushMatrix();
+    glTranslatef(planet->orbit.center[0], planet->orbit.center[1], planet->orbit.center[2]);
+    glRotatef(t * planet->speed, planet->axis[0], planet->axis[1], planet->axis[2]);
+    gluSphere(quadric, planet->radius, SPHERE_N, SPHERE_N);
+    glPopMatrix();
+}
 
 void display(void)
 {
+    int i; /* C99 is the most ugly thing ever created. It is truly an abomination. */
+    float t;
+
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -114,7 +158,7 @@ void display(void)
     glPushMatrix();
 
     // better rotation by rotating around the point 200,200,200
-    glTranslated(200,200,200);
+    // glTranslated(200,200,200);
 
     // zoom & panning
     glTranslatef(camera_x, camera_y, camera_zoom);
@@ -126,48 +170,20 @@ void display(void)
     glRotatef(camera_heading, 0, 1, 0);
 
     // ... and back to 0,0,0 origin
-    glTranslated(-200, -200, -200);
+    // glTranslated(-200, -200, -200);
 
     // paint!
     glEnable(GL_TEXTURE_2D);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glEnableClientState(GL_COLOR_ARRAY);
+    
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
-    glPushMatrix();
-    glTranslated(90,320,100);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
+    t = (float) glutGet(GLUT_ELAPSED_TIME) / 20;
 
-    setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
-    glPushMatrix();
-    glTranslated(210,270,300);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
-    glPushMatrix();
-    glTranslated(290,170,150);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
-    glPushMatrix();
-    glTranslated(140,220,400);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
-    glPushMatrix();
-    glTranslated(110,130,200);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
+    for (i = 0; i < num_planets; ++i)
+        drawPlanet(planets[i], t);
 
     glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
 
     glDisable(GL_TEXTURE_2D);
 
@@ -211,7 +227,7 @@ void reshape(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,5000);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -270,7 +286,7 @@ void initLights()
 {
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
-    GLfloat light_position[] = { -200.0, 600.0, 1500.0 };
+    GLfloat light_position[] = { 200.0, 200.0, 200.0 };
     
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
@@ -291,9 +307,36 @@ void initQuadric()
     gluQuadricTexture(quadric, GL_TRUE);
 }
 
-void initTextures()
+void initPlanets()
 {
-    texture = loadTexture("earthmap1k.png");
+    planets = malloc(sizeof(Planet*) * 2);
+
+    Planet *earth = malloc(sizeof(Planet));
+    earth->orbit.center[0] = 90;
+    earth->orbit.center[1] = 320;
+    earth->orbit.center[2] = 100;
+    earth->radius = 50;
+    earth->texture = loadTexture("textures/earth.png");
+
+    earth->axis[0] = 0;
+    earth->axis[1] = 1;
+    earth->axis[2] = 0;
+    earth->speed = 1;
+
+    planets[0] = earth;
+    
+    Planet *sun = malloc(sizeof(Planet));
+    sun->orbit.center[0] = 0;
+    sun->orbit.center[1] = 0;
+    sun->orbit.center[2] = 0;
+    sun->radius = 100;
+    sun->texture = loadTexture("textures/sun.png");
+
+    setVector(sun->axis, 0, 1, 0);
+    sun->speed = 1.0 / 25.38;
+
+    planets[1] = sun;
+    num_planets = 2;
 }
 
 int main(int argc, char** argv)
@@ -328,8 +371,8 @@ int main(int argc, char** argv)
 
     initQuadric();
 
-    initTextures();
-    
+    initPlanets();
+
     /* Register GLUT callback functions */
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
