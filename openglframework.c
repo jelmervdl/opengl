@@ -310,12 +310,12 @@ void idle()
     switch (mouse_mode)
     {
         case ZOOMING:
-            camera_zoom += 1.0 / 10000 * mouse_dy;
+            camera_zoom += 1.0 / 1000 * mouse_dy;
             break;
 
         case PANNING:
-            camera_x += 1.0 / 10000 * mouse_dx;
-            camera_y -= 1.0 / 10000 * mouse_dy;
+            camera_x += 1.0 / 1000 * mouse_dx;
+            camera_y -= 1.0 / 1000 * mouse_dy;
             break;
         
         case ROTATING:
@@ -401,10 +401,28 @@ void initPlanets()
 {
     sun = initPlanet();
     sun->orbit.radius = 0;
-    sun->radius = 40;
+    sun->radius = 45;
     sun->texture = loadTexture("textures/sun.png");
     sun->speed = 1.0 / 25.38;
     setColor(sun->mat_emission, .3, .3, .3, 1.0);
+    
+    Planet *mercury = initPlanet();
+    mercury->orbit.radius = 60; // in million km
+    mercury->orbit.speed = 1.0 / 6; // should be 1.0 / 365;
+    mercury->radius = 5;
+    mercury->texture = loadTexture("textures/mercury.png");
+    mercury->speed = 1;
+    
+    addMoon(mercury, sun);
+    
+    Planet *venus = initPlanet();
+    venus->orbit.radius = 90; // in million km
+    venus->orbit.speed = 1.0 / 14; // should be 1.0 / 365;
+    venus->radius = 10;
+    venus->texture = loadTexture("textures/venus.png");
+    venus->speed = 1;
+    
+    addMoon(venus, sun);
 
     Planet *earth = initPlanet();
     earth->orbit.radius = 150; // in million km
@@ -424,6 +442,51 @@ void initPlanets()
     moon->speed = 1.0 / 5;
     
     addMoon(moon, earth);
+    
+    Planet *mars = initPlanet();
+    mars->orbit.radius = 250; // in million km
+    mars->orbit.speed = 1.0 / 24; // should be 1.0 / 365;
+    mars->radius = 9;
+    mars->texture = loadTexture("textures/mars.png");
+    mars->speed = 1;
+    
+    addMoon(mars, sun);
+    
+    Planet *jupiter = initPlanet();
+    jupiter->orbit.radius = 350; // in million km
+    jupiter->orbit.speed = 1.0 / 30; // should be 1.0 / 365;
+    jupiter->radius = 25;
+    jupiter->texture = loadTexture("textures/jupiter.png");
+    jupiter->speed = 0.8;
+    
+    addMoon(jupiter, sun);
+    
+    Planet *saturn = initPlanet();
+    saturn->orbit.radius = 450; // in million km
+    saturn->orbit.speed = 1.0 / 28; // should be 1.0 / 365;
+    saturn->radius = 20;
+    saturn->texture = loadTexture("textures/saturn.png");
+    saturn->speed = 0.7;
+    
+    addMoon(saturn, sun);
+    
+    Planet *uranus = initPlanet();
+    uranus->orbit.radius = 550; // in million km
+    uranus->orbit.speed = 1.0 / 35; // should be 1.0 / 365;
+    uranus->radius = 15;
+    uranus->texture = loadTexture("textures/uranus.png");
+    uranus->speed = 0.9;
+    
+    addMoon(uranus, sun);
+    
+    Planet *neptune = initPlanet();
+    neptune->orbit.radius = 650; // in million km
+    neptune->orbit.speed = 1.0 / 28; // should be 1.0 / 365;
+    neptune->radius = 15;
+    neptune->texture = loadTexture("textures/neptune.png");
+    neptune->speed = 0.9;
+    
+    addMoon(neptune, sun);
 }
 
 int main(int argc, char** argv)
