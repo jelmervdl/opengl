@@ -41,6 +41,7 @@
 typedef struct _Orbit {
     GLfloat center[3];
     GLfloat axis[3];
+    GLfloat angle;
     GLfloat radius;
     GLfloat speed;
 } Orbit;
@@ -173,8 +174,11 @@ void drawPlanet(Planet* planet, float t)
     // Translate to the center of the orbit
     glTranslatef(planet->orbit.center[0], planet->orbit.center[1], planet->orbit.center[2]);
 
-    // Rotate around the orbit
-    glRotatef(t * planet->orbit.speed, planet->orbit.axis[0], planet->orbit.axis[1], planet->orbit.axis[2]);
+    // Rotate into orbit
+    glRotatef(planet->orbit.angle, planet->orbit.axis[0], planet->orbit.axis[1], planet->orbit.axis[2]);
+
+    // Rotate the planet around its orbit
+    glRotatef(fmod(t * planet->orbit.speed, 360), 0, 1, 0);
 
     drawCircle(planet->orbit.radius);
 
@@ -185,7 +189,7 @@ void drawPlanet(Planet* planet, float t)
         drawPlanet(planet->moons[i], t);
 
     // Rotate the planet around it's axis
-    glRotatef(t * planet->speed, planet->axis[0], planet->axis[1], planet->axis[2]);
+    glRotatef(fmod(t * planet->speed, 360), planet->axis[0], planet->axis[1], planet->axis[2]);
 
     // Draw the planet
     glBindTexture(GL_TEXTURE_2D, planet->texture);
@@ -366,6 +370,7 @@ Planet *initPlanet()
     
     setVector(planet->orbit.center, 0, 0, 0);
     setVector(planet->orbit.axis, 0, 1, 0);
+    planet->orbit.angle = 0;
     planet->orbit.speed = 0;
 
     setVector(planet->axis, 0, 1, 0);
@@ -434,7 +439,8 @@ void initPlanets()
     addMoon(earth, sun);
 
     Planet *moon = initPlanet();
-    setVector(moon->orbit.axis, 1, 1, 0);
+    setVector(moon->orbit.axis, 1, .5, 0);
+    moon->orbit.angle = 35;
     moon->orbit.radius = 20;
     moon->orbit.speed = 1.0 / 2; // 1.0 / 28;
     moon->radius = 5;
@@ -462,6 +468,8 @@ void initPlanets()
     addMoon(jupiter, sun);
     
     Planet *saturn = initPlanet();
+    setVector(saturn->orbit.axis, .15, .8, 0);
+    saturn->orbit.angle = 20;
     saturn->orbit.radius = 450; // in million km
     saturn->orbit.speed = 1.0 / 28; // should be 1.0 / 365;
     saturn->radius = 20;
