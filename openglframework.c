@@ -83,6 +83,8 @@ int mouse_y = 0;
 int mouse_dx = 0;
 int mouse_dy = 0;
 
+float speed = 1;
+
 enum MouseMode mouse_mode = IDLE;
 
 GLUquadric *quadric;
@@ -233,7 +235,7 @@ void display(void)
 
     t = (float) glutGet(GLUT_ELAPSED_TIME) / 20;
 
-    drawPlanet(sun, t);
+    drawPlanet(sun, t * speed);
 
     // glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
@@ -265,7 +267,20 @@ void keyboard(unsigned char key, int x, int y)
         case 'R':
             reset_camera();
             break;
-         
+        
+        case '+':
+        case '=':
+            speed++;
+            break;
+
+        case '-':
+            speed--;
+            break;
+
+        case '0':
+            speed = 1;
+            break;
+
         case 'q':
         case 'Q':
         case 27: // ESC key
